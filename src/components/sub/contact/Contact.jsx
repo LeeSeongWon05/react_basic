@@ -8,14 +8,19 @@ export default function Contact() {
 	//리액트 컴포넌트안쪽에서 window객체로부터 kakao객체를 비구조화할당을 이용해서 수동으로 꺼내옴
 	const { kakao } = window;
 	const mapOption = {
-		center: new kakao.maps.LatLng(37.584707, 126.885563),
+		center: new kakao.maps.LatLng(37.58478163978524, 126.88566424098676),
 		level: 1,
 	};
-	//마커위치가 출력될 인스턴스 객체 생성
-	const markerPosition = new kakao.maps.LatLng(37.584707, 126.885563);
+	const imageSrc = `${process.env.PUBLIC_URL}/img/marker1.png`;
+	const imageSize = new kakao.maps.Size(232, 99);
+	const imageOption = { offset: new kakao.maps.Point(116, 99) };
+
+	const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
+
 	//마커 위치 인스턴스를 인수로 전달해서 마커 출력 인스턴스 객체를 생성
 	const marker = new kakao.maps.Marker({
-		position: markerPosition,
+		position: mapOption.center,
+		image: markerImage,
 	});
 
 	useEffect(() => {
