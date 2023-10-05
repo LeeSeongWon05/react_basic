@@ -8,7 +8,7 @@ export default function Youtube() {
 	const fetchYoutube = () => {
 		const api_key = process.env.REACT_APP_YOUTUBE_API;
 		const baseURL = 'https://www.googleapis.com/youtube/v3/playlistItems';
-		const pid = 'PLHtvRFLN5v-W5bQjvyH8QTdQQhgflJ3nu';
+		const pid = 'PL9I0cGMkw7P6QXU1F9HI0JE370vyxQsV3';
 		const num = 5;
 		const resultURL = `${baseURL}?key=${api_key}&part=snippet&playlistId=${pid}&maxResults=${num}`;
 
@@ -19,6 +19,7 @@ export default function Youtube() {
 				setYoutube(json.items);
 			});
 	};
+
 	useEffect(() => {
 		fetchYoutube();
 	}, []);
