@@ -1,34 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo&display=swap');
+import './Layout.scss';
 
-.layout {
-	width: 100%;
-	background: #fff;
-	position: relative;
+export default function Layout({ title, children }) {
+	return (
+		<section className={`layout ${title}`}>
+			<figure></figure>
 
-	figure {
-		width: 100%;
-		height: 30vh;
-		background: gray;
-		opacity: 1;
-	}
-
-	.content {
-		width: 80vw;
-		margin: 5vh auto;
-		min-height: 60vh;
-		opacity: 1;
-
-		h1 {
-			font: normal 100px/1 'Nanum Myeongjo';
-			color: #555;
-			margin-bottom: 30px;
-
-			span {
-				display: inline-block;
-				opacity: 0;
-				transform: scale(3);
-				transition-duration: 0.5s;
-			}
-		}
-	}
+			<div className='content'>
+				<h1>{title}</h1>
+				{children}
+			</div>
+		</section>
+	);
 }

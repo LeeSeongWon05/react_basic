@@ -1,7 +1,7 @@
 import Layout from '../../common/layout/Layout';
 import Modal from '../../common/modal/Modal';
 import './Youtube.scss';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 /*
 	리액트는 단방향 데이터 바인딩
 	- 부모에서 자식으로 데이터 전달가능하지만 자식에서 부모로는 데이터를 전달 불가
@@ -12,13 +12,12 @@ import { useEffect, useState, useRef } from 'react';
 	- 자식컴포넌트에서는 전달받은 state변경함수로 간접적으로 부모 state값 변경가능
 
 	useRef로 jsx는 참조 객체에 담을 수 있음
-	컴포넌트를 useRef를 통한 참조객체 담는것이 불가
 */
 
 export default function Youtube() {
-	const refEl = useRef(null);
 	const [Youtube, setYoutube] = useState([]);
 	const [IsModal, setIsModal] = useState(false);
+	const [Index, setIndex] = useState(0);
 
 	const fetchYoutube = () => {
 		const api_key = process.env.REACT_APP_YOUTUBE_API;
@@ -44,9 +43,15 @@ export default function Youtube() {
 				{Youtube.map((data, idx) => {
 					return (
 						<article key={idx}>
-							<h2 onClick={() => console.log(refEl)}>{data.snippet.title}</h2>
+							<h2>{data.snippet.title}</h2>
 							<p>{data.snippet.description}</p>
-							<div className='pic' onClick={() => refEl.current.open()}>
+							<div
+								className='pic'
+								onClick={() => {
+									setIndex(idx);
+									setIsModal(true);
+								}}
+							>
 								<img src={data.snippet.thumbnails.standard.url} alt={data.title} />
 							</div>
 						</article>
@@ -54,7 +59,14 @@ export default function Youtube() {
 				})}
 			</Layout>
 
-			<Modal setIsModal={setIsModal} ref={refEl}></Modal>
+			{IsModal && (
+				<Modal setIsModal={setIsModal}>
+					<iframe
+						src={`https://www.youtube.com/embed/${Youtube[Index].snippet.resourceId.videoId}`}
+						title='youtube'
+					></iframe>
+				</Modal>
+			)}
 		</>
 	);
 }
