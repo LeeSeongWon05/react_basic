@@ -1,4 +1,5 @@
 import Layout from '../../common/layout/Layout';
+import Modal from '../../common/modal/Modal';
 import './Gallery.scss';
 import { useState, useEffect, useRef } from 'react';
 import Masonry from 'react-masonry-component';
@@ -9,11 +10,13 @@ export default function Gallery() {
 	const refBtnSet = useRef(null);
 	const [Pics, setPics] = useState([]);
 	const [Loader, setLoader] = useState(true);
-	//대체이미지가 추가되었는지 아닌지를 확인하는 state
-	//Fix(true): 대체이미지 추가됨, Fix(false): 대체이미지 적용안됨
+	const [ActiveURL, setActiveURL] = useState('');
 	const [Fix, setFix] = useState(false);
-	const my_id = '164021883@N04';
+	const [IsUser, setIsUser] = useState(true);
+	const [IsModal, setIsModal] = useState(false);
+	const my_id = '199305274@N06';
 
+	//처음 마운트 데이터 호출 함수
 	const fetchData = async (opt) => {
 		let count = 0;
 		setLoader(true);
@@ -23,7 +26,7 @@ export default function Gallery() {
 		const method_interest = 'flickr.interestingness.getList';
 		const method_user = 'flickr.people.getPhotos';
 		const method_search = 'flickr.photos.search';
-		const num = 10;
+		const num = 50;
 
 		if (opt.type === 'interest') {
 			url = `https://www.flickr.com/services/rest/?method=${method_interest}&api_key=${api_key}&per_page=${num}&nojsoncallback=1&format=json`;
@@ -44,17 +47,11 @@ export default function Gallery() {
 		setPics(json.photos.photo);
 
 		const imgs = refFrame.current?.querySelectorAll('img');
-		console.log(imgs);
 
 		imgs.forEach((img) => {
 			img.onload = () => {
 				++count;
-				console.log('현재 로딩된 img갯수', count);
-				//이미지 소스 렌더링 유무 카운트할때
-				//Fix값이 true이면 대체 이미지가 이미 캐싱되어 있는 상태이므로 profile이미지를 제외한 이미지 갯수와 비교
-				//Fix값이 false이면 대체 이미지가 캐싱되어있지 않는 상태이므로 prfoile이미지까지 포함해서 갯수 비교
 				if (count === (Fix ? imgs.length / 2 - 1 : imgs.length - 2)) {
-					console.log('모든 이미지 소스 렌더링 완료!');
 					setLoader(false);
 					refFrame.current.classList.add('on');
 				}
@@ -62,107 +59,132 @@ export default function Gallery() {
 		});
 	};
 
+	//submit이벤트 발생시 실행할 함수
+	const handleSubmit = (e) => {
+		e.preventDefault();
+		setIsUser(false);
+
+		const btns = refBtnSet.current.querySelectorAll('button');
+		btns.forEach((btn) => btn.classList.remove('on'));
+
+		if (refInput.current.value.trim() === '') {
+			return alert('검색어를 입력하세요.');
+		}
+
+		fetchData({ type: 'search', tags: refInput.current.value });
+		refInput.current.value = '';
+	};
+
+	//myGallery 클릭 이벤트 발생시 실행할 함수
+	const handleClickMy = (e) => {
+		setIsUser(true);
+		if (e.target.classList.contains('on')) return;
+
+		const btns = refBtnSet.current.querySelectorAll('button');
+		btns.forEach((btn) => btn.classList.remove('on'));
+		e.target.classList.add('on');
+
+		fetchData({ type: 'user', id: my_id });
+	};
+
+	//Interest Gallery 클릭 이벤트 발생시 실행할 함수
+	const handleClickInterest = (e) => {
+		setIsUser(false);
+		if (e.target.classList.contains('on')) return;
+
+		const btns = refBtnSet.current.querySelectorAll('button');
+		btns.forEach((btn) => btn.classList.remove('on'));
+		e.target.classList.add('on');
+
+		fetchData({ type: 'interest' });
+	};
+
+	//profile 아이디 클릭시 실행할 함수
+	const handleClickProfile = (e) => {
+		if (IsUser) return;
+		fetchData({ type: 'user', id: e.target.innerText });
+		setIsUser(true);
+	};
+
 	useEffect(() => {
 		fetchData({ type: 'user', id: my_id });
 	}, []);
 
 	return (
-		<Layout title={'Gallery'}>
-			<div className='searchBox'>
-				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						if (refInput.current.value.trim() === '') {
-							return alert('검색어를 입력하세요.');
-						}
+		<>
+			<Layout title={'Gallery'}>
+				<div className='searchBox'>
+					<form onSubmit={handleSubmit}>
+						<input ref={refInput} type='text' placeholder='검색어를 입력하세요' />
+						<button>검색</button>
+					</form>
+				</div>
 
-						fetchData({ type: 'search', tags: refInput.current.value });
-						refInput.current.value = '';
-					}}
-				>
-					<input ref={refInput} type='text' placeholder='검색어를 입력하세요' />
-					<button>검색</button>
-				</form>
-			</div>
+				<div className='btnSet' ref={refBtnSet}>
+					<button className='on' onClick={handleClickMy}>
+						My Gallery
+					</button>
 
-			<div className='btnSet' ref={refBtnSet}>
-				<button
-					className='on'
-					onClick={(e) => {
-						if (e.target.classList.contains('on')) return;
+					<button onClick={handleClickInterest}>Interest Gallery</button>
+				</div>
 
-						const btns = refBtnSet.current.querySelectorAll('button');
-						btns.forEach((btn) => btn.classList.remove('on'));
-						e.target.classList.add('on');
+				{Loader && (
+					<img
+						className='loading'
+						src={`${process.env.PUBLIC_URL}/img/loading.gif`}
+						alt='loading'
+					/>
+				)}
 
-						fetchData({ type: 'user', id: my_id });
-					}}
-				>
-					My Gallery
-				</button>
-				<button
-					onClick={(e) => {
-						if (e.target.classList.contains('on')) return;
-
-						const btns = refBtnSet.current.querySelectorAll('button');
-						btns.forEach((btn) => btn.classList.remove('on'));
-						e.target.classList.add('on');
-
-						fetchData({ type: 'interest' });
-					}}
-				>
-					Interest Gallery
-				</button>
-			</div>
-
-			{Loader && (
-				<img className='loading' src={`${process.env.PUBLIC_URL}/img/loading.gif`} alt='loading' />
-			)}
-			<div className='picFrame' ref={refFrame}>
-				<Masonry
-					elementType={'div'}
-					options={{ transitionDuration: '0.5s' }}
-					disableImagesLoaded={false}
-					updateOnEachImageLoad={false}
-				>
-					{Pics.map((data, idx) => {
-						return (
-							<article key={idx}>
-								<div className='inner'>
-									<img
-										className='pic'
-										src={`https://live.staticflickr.com/${data.server}/${data.id}_${data.secret}_m.jpg`}
-										alt={`https://live.staticflickr.com/${data.server}/${data.id}_${data.secret}_b.jpg`}
-									/>
-									<h2>{data.title}</h2>
-
-									<div className='profile'>
+				<div className='picFrame' ref={refFrame}>
+					<Masonry
+						elementType={'div'}
+						options={{ transitionDuration: '0.5s' }}
+						disableImagesLoaded={false}
+						updateOnEachImageLoad={false}
+					>
+						{Pics.map((data, idx) => {
+							return (
+								<article key={idx}>
+									<div className='inner'>
 										<img
-											src={`http://farm${data.farm}.staticflickr.com/${data.server}/buddyicons/${data.owner2}.jpg`}
-											alt={data.owner}
-											onError={(e) => {
-												//만약 프로필 이미지에서 에러가 발생하면 대체이미지를 추가
-												//이때 대체이미지는 같은 이미지를 계속 호출하기 때문에 이미 캐싱처리 되어 있어서
-												//다음번 렌더링 타이임에 count값에 포함이 안됨
-												//따라서 대체이미지 추가 유무를 Fix라는 state에 담아서 구분
-												setFix(true);
-												e.target.setAttribute('src', 'https://www.flickr.com/images/buddyicon.gif');
+											className='pic'
+											src={`https://live.staticflickr.com/${data.server}/${data.id}_${data.secret}_m.jpg`}
+											alt={`https://live.staticflickr.com/${data.server}/${data.id}_${data.secret}_b.jpg`}
+											onClick={(e) => {
+												setActiveURL(e.target.getAttribute('alt'));
+												setIsModal(true);
 											}}
 										/>
-										<span
-											onClick={() => {
-												fetchData({ type: 'user', id: data.owner });
-											}}
-										>
-											{data.owner}
-										</span>
+										<h2>{data.title}</h2>
+
+										<div className='profile'>
+											<img
+												src={`http://farm${data.farm}.staticflickr.com/${data.server}/buddyicons/${data.owner}.jpg`}
+												alt={data.owner}
+												onError={(e) => {
+													setFix(true);
+													e.target.setAttribute(
+														'src',
+														'https://www.flickr.com/images/buddyicon.gif'
+													);
+												}}
+											/>
+											<span onClick={handleClickProfile}>{data.owner}</span>
+										</div>
 									</div>
-								</div>
-							</article>
-						);
-					})}
-				</Masonry>
-			</div>
-		</Layout>
+								</article>
+							);
+						})}
+					</Masonry>
+				</div>
+			</Layout>
+
+			{IsModal && (
+				<Modal setIsModal={setIsModal}>
+					<img src={ActiveURL} alt='img' />
+				</Modal>
+			)}
+		</>
 	);
 }
