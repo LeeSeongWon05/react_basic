@@ -2,61 +2,52 @@
 	figure {
 		background-color: lightblue;
 	}
-
-	.historyBox {
-		margin: 100px 0px;
-		article {
+	.content {
+		h1 {
+			font-size: 2rem;
+			border-bottom: 1px solid #777;
+			padding-bottom: 1rem;
+		}
+		.container {
 			width: 100%;
 			display: flex;
-			flex-wrap: wrap;
-			padding: 50px 0px;
 			justify-content: space-between;
-			position: relative;
 
-			.line {
-				position: absolute;
-				top: 0;
-				left: 35%;
-				width: 1px;
-				height: 1px;
-				background: #555;
+			.infoBox {
+				width: 25%;
+				height: 50vh;
+				background: blue;
 			}
+			.memberBox {
+				width: 70%;
+				display: flex;
+				justify-content: space-between;
+				flex-wrap: wrap; //줄바꿈처리
 
-			h2 {
-				width: 30%;
-				text-align: right;
-			}
-			ul {
-				width: 65%;
-				padding-left: 50px;
-			}
-		}
-	}
+				article {
+					width: 32%;
+					margin-bottom: 70px;
 
-	.memberBox {
-		width: 100%;
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: space-between;
+					.pic {
+						width: 100%;
+						height: 40vh;
 
-		article {
-			width: 30%;
-			margin-bottom: 100px;
-
-			.pic {
-				width: 100%;
-				height: 30vw;
-
-				img {
-					width: 100%;
-					height: 100%;
-					object-fit: cover;
+						img {
+							width: 100%;
+							height: 100%;
+							object-fit: cover;
+						}
+					}
 				}
-			}
-
-			h2 {
-				margin-bottom: 10px;
 			}
 		}
 	}
 }
+
+/*
+	flex로 UI좌우 배치하는 방법
+	1. 좌우배치할 덩어리를 부모태그로 wrapping
+	2. 부모요소에 display: flex; justify:content적용
+	3. 이때 사이간격을 주고 싶다면 총 너비의 합이 100% 안되게 설정
+	4. 자식요소로 세로로 줄바꿈 되야 된다면 부모요소에 flex-wrap: wrap설정
+*/
