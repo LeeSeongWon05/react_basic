@@ -1,5 +1,6 @@
 import Layout from '../../common/layout/Layout';
-import Modal from '../../common/modal/Modal';
+import { Link } from 'react-router-dom';
+//import Modal from '../../common/modal/Modal';
 import './Youtube.scss';
 import { useEffect, useState } from 'react';
 export default function Youtube() {
@@ -34,31 +35,39 @@ export default function Youtube() {
 
 					return (
 						<article key={idx}>
-							<h2>{tit.length > 60 ? tit.substr(0, 60) + '...' : tit}</h2>
-							<p>{desc.length > 180 ? desc.substr(0, 180) + '...' : desc}</p>
-							<span>{date.split('T')[0].split('-').join('.')}</span>
+							<div className='titBox'>
+								<h2>{tit.length > 60 ? tit.substr(0, 60) + '...' : tit}</h2>
+							</div>
+
+							<div className='conBox'>
+								<p>{desc.length > 180 ? desc.substr(0, 180) + '...' : desc}</p>
+								<span>{date.split('T')[0].split('-').join('.')}</span>
+							</div>
+
 							<div
-								className='pic'
+								className='picBox'
 								onClick={() => {
 									setIndex(idx);
 									setIsModal(true);
 								}}
 							>
-								<img src={data.snippet.thumbnails.standard.url} alt={data.title} />
+								<Link to={`/youtube/${idx}`}>
+									<img src={data.snippet.thumbnails.standard.url} alt={data.title} />
+								</Link>
 							</div>
 						</article>
 					);
 				})}
 			</Layout>
 
-			{IsModal && (
+			{/* {IsModal && (
 				<Modal setIsModal={setIsModal}>
 					<iframe
 						src={`https://www.youtube.com/embed/${Youtube[Index].snippet.resourceId.videoId}`}
 						title='youtube'
 					></iframe>
 				</Modal>
-			)}
+			)} */}
 		</>
 	);
 }
