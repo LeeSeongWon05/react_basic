@@ -1,8 +1,10 @@
 import './Menu.scss';
 import { Link, NavLink } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useSelector } from 'react-redux';
 
 function Menu() {
+	const { isOpen } = useSelector((store) => store.menu);
 	return (
 		<AnimatePresence>
 			<motion.aside
