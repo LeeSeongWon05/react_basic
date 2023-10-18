@@ -14,7 +14,7 @@ export default function Gallery() {
 	const [ActiveURL, setActiveURL] = useState('');
 	const [IsUser, setIsUser] = useState(true);
 	const [IsModal, setIsModal] = useState(false);
-	const my_id = '164021883@N04';
+	const my_id = '199305274@N06';
 
 	//submit이벤트 발생시 실행할 함수
 	const handleSubmit = (e) => {
