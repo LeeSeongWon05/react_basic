@@ -1,15 +1,21 @@
+import { useDebounce } from '../../../hooks/useDebounce';
 import Layout from '../../common/layout/Layout';
 import './Members.scss';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
+//해당 컴포넌트에 메모리 누수 콘솔오류가 뜨는 이유 (memory leak);
+//Errs스테이트에 값이 담기는 시점이 useDebounce에 의해서 0.5초 이후인데
+//Members 컴포넌트 접속하자마자 0.5초안에 다른 페이지로 넘어가면
+//아직 state에 값이 담기지 않았는데 unmount된 경우이므로 뜨는 오류
+//컴포넌트 unmount시 값을 Mounted값을 false로 변경해주고 해당 값이 true일때에만 state변경처리
 export default function Members() {
 	const initVal = {
 		userid: '',
 		pwd1: '',
 		pwd2: '',
 		email: '',
-		gender: false,
-		interests: false,
+		gender: '',
+		interests: [],
 		edu: '',
 		comments: '',
 	};
@@ -18,6 +24,11 @@ export default function Members() {
 	const refSelGroup = useRef(null);
 	const [Val, setVal] = useState(initVal);
 	const [Errs, setErrs] = useState({});
+	const [Mounted, setMounted] = useState(true);
+
+	//기존의 onchange이벤트가 발생할때마다 변경되는 Val값을 useDebounce를 이용해서
+	//Debouncing이 적용된 또다른 State를 전달 받음
+	const DebouncedVal = useDebounce(Val);
 
 	const resetForm = (e) => {
 		e.preventDefault();
@@ -34,17 +45,14 @@ export default function Members() {
 		setVal({ ...Val, [name]: value });
 	};
 
-	const handleRadio = (e) => {
-		const { name, checked } = e.target;
-		setVal({ ...Val, [name]: checked });
-	};
-
 	const handleCheck = (e) => {
 		const { name } = e.target;
-		let isChecked = false;
+		let checkArr = [];
 		const inputs = e.target.parentElement.querySelectorAll('input');
-		inputs.forEach((input) => input.checked && (isChecked = true));
-		setVal({ ...Val, [name]: isChecked });
+		//checkbox요소를 반복돌면서 해당 요소가 체크되어 있다면 해당 value값을 배열에 담아주고
+		//배열을 state에 담아줌
+		inputs.forEach((input) => input.checked && checkArr.push(input.value));
+		setVal({ ...Val, [name]: checkArr });
 	};
 
 	const check = (value) => {
@@ -93,7 +101,7 @@ export default function Members() {
 		}
 
 		//관심사인증
-		if (!value.interests) {
+		if (value.interests.length === 0) {
 			errs.interests = '관심사를 하나이상 체크해주세요.';
 		}
 
@@ -117,6 +125,22 @@ export default function Members() {
 			setErrs(check(Val));
 		}
 	};
+
+	const showCheck = () => {
+		Mounted && setErrs(check(DebouncedVal));
+	};
+
+	//의존성 배열에 Debouncing이 적용된 state값을 등록해서
+	//함수의 핸들러함수 호출의 빈도를 줄여줌
+	//useDebounce는 state의 변경횟수 자체를 줄이는게 아니라.
+	//해당 state에 따라 호출되는 함수의 빈도를 줄임[]
+	useEffect(() => {
+		console.log('Val state값 변경에 의해서 showCheck함수 호출');
+		showCheck();
+		console.log(DebouncedVal);
+
+		return () => setMounted(false);
+	}, [DebouncedVal]);
 
 	return (
 		<Layout title={'Members'}>
@@ -202,10 +226,22 @@ export default function Members() {
 								<th>Gender</th>
 								<td ref={refRadioGroup}>
 									<label htmlFor='female'>female</label>
-									<input type='radio' name='gender' id='female' onChange={handleRadio} />
+									<input
+										type='radio'
+										name='gender'
+										id='female'
+										defaultValue='female'
+										onChange={handleChange}
+									/>
 
 									<label htmlFor='male'>male</label>
-									<input type='radio' name='gender' id='male' onChange={handleRadio} />
+									<input
+										type='radio'
+										name='gender'
+										id='male'
+										defaultValue='male'
+										onChange={handleChange}
+									/>
 									{Errs.gender && <p>{Errs.gender}</p>}
 								</td>
 							</tr>
@@ -215,13 +251,31 @@ export default function Members() {
 								<th>Interests</th>
 								<td ref={refCheckGroup}>
 									<label htmlFor='sports'>sports</label>
-									<input type='checkbox' id='sports' name='interests' onChange={handleCheck} />
+									<input
+										type='checkbox'
+										id='sports'
+										name='interests'
+										defaultValue='sports'
+										onChange={handleCheck}
+									/>
 
 									<label htmlFor='game'>game</label>
-									<input type='checkbox' id='game' name='interests' onChange={handleCheck} />
+									<input
+										type='checkbox'
+										id='game'
+										name='interests'
+										defaultValue='game'
+										onChange={handleCheck}
+									/>
 
 									<label htmlFor='music'>music</label>
-									<input type='checkbox' id='music' name='interests' onChange={handleCheck} />
+									<input
+										type='checkbox'
+										id='music'
+										name='interests'
+										defaultValue='music'
+										onChange={handleCheck}
+									/>
 									{Errs.interests && <p>{Errs.interests}</p>}
 								</td>
 							</tr>
